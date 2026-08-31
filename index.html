@@ -195,7 +195,7 @@
     const toast = document.getElementById("toast");
     function notify(text) { toast.textContent = text; toast.classList.add("show"); clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2800); }
     document.getElementById("copyIp").addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText("StarTimeX.xyz"); } catch { const area = document.createElement("textarea"); area.value = "StarTimeX.xyz"; document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); }
+      try { await navigator.clipboard.writeText("mc.startimex.ru"); } catch { const area = document.createElement("textarea"); area.value = "StarTimeX.xyz"; document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); }
       notify("IP скопирован! Ждем тебя на сервере");
     });
     function buy(name) { notify(`Привилегия ${name} выбрана — магазин скоро откроется`); }
