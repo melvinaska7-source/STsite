@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StarTimeX — Бескомпромиссная анархия</title>
+  <meta name="description" content="StarTimeX — Minecraft сервер в режиме Анархия. Здесь нет правил.">
+  <style>
+    :root {
+      --bg: #0b0518; --bg2: #130728; --text: #f7f1ff; --muted: #b4a8c9;
+      --line: rgba(255,255,255,.12); --glass: rgba(49, 20, 78, .45);
+      --purple: #b56cff; --pink: #ee78ff;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; min-width: 320px; color: var(--text); background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5; overflow-x: hidden;
+    }
+    body::before, body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; border-radius: 50%; filter: blur(80px); opacity: .42; }
+    body::before { width: 42vw; height: 42vw; top: -12vw; left: -10vw; background: #6e1de0; }
+    body::after { width: 38vw; height: 38vw; right: -12vw; top: 45vh; background: #a51cce; }
+    .grid {
+      position: fixed; inset: 0; z-index: -2; opacity: .18; pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 56px 56px; mask-image: linear-gradient(to bottom, #000, transparent 80%);
+    }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin: auto; }
+    .glass { border: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); box-shadow: inset 0 1px rgba(255,255,255,.08), 0 18px 80px rgba(0,0,0,.2); }
+    header { position: sticky; top: 14px; z-index: 10; margin: 14px auto 0; border-radius: 20px; }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px 13px 22px; }
+    .brand { color: white; text-decoration: none; font-size: 1.28rem; font-weight: 850; letter-spacing: -.04em; }
+    .brand span { background: linear-gradient(100deg, #a96cff, #ff9bf3); -webkit-background-clip: text; color: transparent; }
+    .links { display: flex; align-items: center; gap: 6px; }
+    .tab, .ip { color: #c8badc; border: 0; background: transparent; font: inherit; cursor: pointer; padding: 10px 14px; border-radius: 12px; transition: .25s; }
+    .tab:hover, .tab.active { color: white; background: rgba(255,255,255,.09); }
+    .ip { color: white; font-size: .9rem; margin-left: 12px; background: linear-gradient(100deg, rgba(140,66,240,.35), rgba(238,120,255,.16)); border: 1px solid rgba(204,147,255,.28); }
+    .ip:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(187,102,255,.25); }
+    main { padding: 96px 0 90px; }
+    .page { display: none; animation: rise .45s ease both; }
+    .page.active { display: block; }
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .hero { max-width: 850px; padding: 26px 0 70px; }
+    .eyebrow { display: inline-flex; gap: 8px; align-items: center; color: #d9b8ff; text-transform: uppercase; letter-spacing: .16em; font-size: .72rem; font-weight: 750; }
+    .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #bc74ff; box-shadow: 0 0 14px #bd65ff; }
+    h1 { margin: 18px 0 16px; font-size: clamp(2.8rem, 7vw, 6.8rem); line-height: .98; letter-spacing: -.075em; max-width: 850px; }
+    h1 em { font-style: normal; background: linear-gradient(110deg, #fff 15%, #d9a1ff 62%, #a85bff); -webkit-background-clip: text; color: transparent; }
+    .lead { max-width: 610px; color: var(--muted); font-size: clamp(1rem, 2vw, 1.22rem); }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin: 24px 0 22px; }
+    h2 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.4rem); letter-spacing: -.05em; }
+    .section-head p { color: var(--muted); margin: 0; }
+    .panel { border-radius: 24px; padding: clamp(22px, 4vw, 40px); }
+    .about { display: grid; grid-template-columns: 1.1fr .9fr; gap: 34px; align-items: center; }
+    .about p { color: var(--muted); font-size: 1.05rem; }
+    .quote-list { display: grid; gap: 12px; }
+    .quote { padding: 20px; border-radius: 17px; border: 1px solid rgba(255,255,255,.09); background: rgba(255,255,255,.045); font-size: 1.08rem; font-weight: 650; }
+    .quote::before { content: "“"; display: block; height: 20px; color: #bd76ff; font-size: 2.5rem; line-height: 1; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .step { padding: 24px; border-radius: 18px; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.09); }
+    .num { color: #cd8dff; font-weight: 850; font-size: 1.6rem; }
+    .step strong { display: block; margin: 9px 0 5px; }
+    .step span { color: var(--muted); font-size: .92rem; }
+    .perks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .perk { position: relative; overflow: hidden; border-radius: 20px; padding: 24px; transition: .28s ease; }
+    .perk:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--accent) 60%, white 10%); box-shadow: 0 16px 38px color-mix(in srgb, var(--accent) 18%, transparent); }
+    .perk::after { content: ""; position: absolute; width: 120px; height: 120px; right: -50px; top: -50px; border-radius: 50%; background: var(--accent); filter: blur(45px); opacity: .28; }
+    .perk h3 { margin: 0; font-size: 1.45rem; letter-spacing: -.04em; }
+    .price { color: var(--accent); margin: 4px 0 18px; font-size: 1.2rem; font-weight: 800; }
+    .tag { position: relative; z-index: 1; display: block; margin-bottom: 18px; padding: 8px 11px; color: var(--accent); border-left: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); font-size: .8rem; font-weight: 700; }
+    .perk p { min-height: 48px; margin: 0 0 20px; color: var(--muted); font-size: .9rem; }
+    .buy { width: 100%; padding: 11px; color: #fff; border: 1px solid color-mix(in srgb, var(--accent) 55%, white 10%); border-radius: 11px; background: color-mix(in srgb, var(--accent) 20%, transparent); font: inherit; font-weight: 750; cursor: pointer; transition: .2s; }
+    .buy:hover { background: var(--accent); box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 55%, transparent); }
+    .chat-wrap { display: flex; flex-direction: column; height: min(640px, 72vh); padding: 0; overflow: hidden; }
+    .key-bar { display: flex; gap: 10px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.03); }
+    .key-bar label { color: var(--muted); font-size: .82rem; white-space: nowrap; }
+    .key-input { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--text); font: inherit; font-size: .88rem; outline: none; }
+    .key-input:focus { border-color: rgba(204,147,255,.5); }
+    .key-save { padding: 9px 14px; border-radius: 10px; border: 1px solid rgba(204,147,255,.35); background: rgba(255,255,255,.06); color: var(--text); font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .key-save:hover { background: rgba(255,255,255,.12); }
+    .key-status { color: #9de8a8; font-size: .78rem; white-space: nowrap; }
+    @media (max-width: 640px) { .key-bar { flex-wrap: wrap; } .key-status { width: 100%; } }
+    .chat-log { flex: 1; overflow-y: auto; padding: clamp(18px, 3vw, 30px); display: flex; flex-direction: column; gap: 14px; }
+    .msg { max-width: 78%; padding: 12px 16px; border-radius: 16px; font-size: .96rem; line-height: 1.5; }
+    .msg.user { align-self: flex-end; color: #fff; background: linear-gradient(100deg, rgba(140,66,240,.55), rgba(238,120,255,.3)); border: 1px solid rgba(204,147,255,.32); border-bottom-right-radius: 4px; }
+    .msg.bot { align-self: flex-start; color: var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+    .msg.bot.typing { color: var(--muted); font-style: italic; }
+    .chat-form { display: flex; gap: 10px; padding: 16px; border-top: 1px solid var(--line); background: rgba(255,255,255,.02); }
+    .chat-input { flex: 1; padding: 12px 16px; border-radius: 13px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--text); font: inherit; outline: none; }
+    .chat-input:focus { border-color: rgba(204,147,255,.5); }
+    .chat-send { padding: 0 20px; border-radius: 13px; border: 1px solid rgba(204,147,255,.4); background: linear-gradient(100deg, rgba(140,66,240,.45), rgba(238,120,255,.2)); color: #fff; font: inherit; font-weight: 700; cursor: pointer; transition: .2s; }
+    .chat-send:hover { box-shadow: 0 0 20px rgba(187,102,255,.3); }
+    .chat-send:disabled { opacity: .5; cursor: default; }
+    footer { padding: 22px 0 44px; color: #796b91; text-align: center; font-size: .83rem; }
+    .toast { position: fixed; z-index: 20; left: 50%; bottom: 25px; transform: translate(-50%, 18px); opacity: 0; pointer-events: none; padding: 13px 18px; border-radius: 13px; background: rgba(31,13,49,.92); border: 1px solid rgba(207,147,255,.38); box-shadow: 0 10px 35px rgba(0,0,0,.35); transition: .3s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 760px) {
+      .wrap { width: min(100% - 24px, 600px); } header { top: 8px; margin-top: 8px; }
+      .nav { flex-wrap: wrap; gap: 10px; padding: 12px; } .links { order: 3; width: 100%; justify-content: space-between; }
+      .ip { margin-left: auto; font-size: .78rem; padding: 9px 10px; } .tab { flex: 1; }
+      main { padding-top: 66px; } .hero { padding-bottom: 48px; } .about, .steps, .perks { grid-template-columns: 1fr; }
+      .section-head { display: block; } .section-head p { margin-top: 7px; } .panel { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid"></div>
+  <header class="wrap glass">
+    <nav class="nav" aria-label="Основная навигация">
+      <a class="brand" href="#" onclick="showPage('home'); return false;">Star<span>TimeX</span></a>
+      <div class="links">
+        <button class="tab active" data-page="home">Главная</button>
+        <button class="tab" data-page="perks">Привилегии</button>
+        <button class="tab" data-page="ai">AI</button>
+      </div>
+      <button class="ip" id="copyIp">IP: StarTimeX.xyz</button>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section id="home" class="page active">
+      <div class="hero">
+        <div class="eyebrow">Minecraft server · Anarchy</div>
+        <h1>StarTimeX — <em>бескомпромиссная анархия</em></h1>
+        <p class="lead">Здесь нет правил. Только твоя сила и твои решения.</p>
+      </div>
+      <div class="section-head"><h2>О режиме Анархия</h2><p>Выживает тот, кто готов рискнуть всем.</p></div>
+      <div class="panel glass about">
+        <div>
+          <p>Забудь о безопасных зонах и справедливых правилах. В StarTimeX каждый ресурс добыт в бою, каждая база может стать целью, а союз — закончиться в тот же момент, когда на горизонте появляется незерит.</p>
+          <p>Создавай свою историю, собирай команду и стань именем, которое будут бояться произносить в чате.</p>
+        </div>
+        <div class="quote-list">
+          <div class="quote">Анархия — это свобода, за которую нужно платить мечом.</div>
+          <div class="quote">Здесь друзья становятся врагами за один стак незерита.</div>
+        </div>
+      </div>
+      <div class="section-head" style="margin-top:70px"><h2>Как начать играть</h2></div>
+      <div class="steps">
+        <div class="step glass"><div class="num">01</div><strong>Скопируй IP</strong><span>StarTimeX.xyz — одним нажатием.</span></div>
+        <div class="step glass"><div class="num">02</div><strong>Зайди с версии Minecraft</strong><span>Подключайся и готовься к первой ночи.</span></div>
+        <div class="step glass"><div class="num">03</div><strong>Вступай в бой</strong><span>Твоя анархия начинается прямо сейчас.</span></div>
+      </div>
+    </section>
+
+    <section id="perks" class="page">
+      <div class="hero"><div class="eyebrow">Power up</div><h1>Выбери свою <em>сторону силы</em></h1><p class="lead">Привилегии для тех, кто не собирается оставаться в тени.</p></div>
+      <div class="perks" id="perkGrid"></div>
+    </section>
+
+    <section id="ai" class="page">
+      <div class="hero"><div class="eyebrow">StarTimeX AI</div><h1>Спроси <em>StarTimeX AI</em></h1><p class="lead">Задай вопрос о сервере, привилегиях или просто пообщайся.</p></div>
+      <div class="panel glass chat-wrap">
+        <div class="key-bar">
+          <label for="apiKeyInput">Gemini API ключ:</label>
+          <input class="key-input" id="apiKeyInput" type="password" placeholder="Вставь свой API ключ..." autocomplete="off">
+          <button class="key-save" id="apiKeySave" type="button">Сохранить</button>
+          <span class="key-status" id="apiKeyStatus"></span>
+        </div>
+        <div class="chat-log" id="chatLog"></div>
+        <form class="chat-form" id="chatForm">
+          <input class="chat-input" id="chatInput" type="text" placeholder="Напиши сообщение..." autocomplete="off">
+          <button class="chat-send" id="chatSend" type="submit">Отправить</button>
+        </form>
+      </div>
+    </section>
+  </main>
+  <footer>StarTimeX · Бескомпромиссная анархия</footer>
+  <div class="toast" id="toast" role="status"></div>
+  <script>
+    const perks = [
+      ["WELY", 40, "#38BDF8", "Первый шаг к абсолютной власти.", "Начальный набор преимуществ для уверенного старта."],
+      ["LERNY", 70, "#3B82F6", "Твое преимущество в первых битвах.", "Больше возможностей с первых минут на сервере."],
+      ["RAZOR", 136, "#FB923C", "Острый как бритва в каждом замесе.", "Усиль свой стиль игры и доминируй в ПВП."],
+      ["VIPER", 240, "#22C55E", "Ядовитый укус для твоих врагов.", "Змеиная скорость и новые возможности."],
+      ["LEVIR", 370, "#1D4ED8", "Сила, с которой придется считаться каждому.", "Статус, мощь и заметное преимущество."],
+      ["PHANTOM", 500, "#A855F7", "Призрак, наводящий страх на всю анархию.", "Исчезай из поля зрения и возвращайся за победой."],
+      ["ETERNIS", 640, "#EAB308", "Вечное преимущество на поле боя.", "Золотой стандарт для настоящих ветеранов."],
+      ["NEMESIS", 990, "#06B6D4", "Неизбежное наказание для твоих соперников.", "Стань главным противником для каждого врага."],
+      ["SOULLAY", 1440, "#EC4899", "Повелитель душ и абсолютный хозяин сервера.", "Максимальный статус для абсолютного доминирования."]
+    ];
+    const grid = document.getElementById("perkGrid");
+    grid.innerHTML = perks.map(([name, price, color, quote, desc]) => `
+      <article class="perk glass" style="--accent:${color}">
+        <h3>${name}</h3><div class="price">${price} ₽</div>
+        <span class="tag">${quote}</span><p>${desc}</p>
+        <button class="buy" onclick="buy('${name}')">Купить</button>
+      </article>`).join("");
+    function showPage(id) {
+      document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === id));
+      document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+      window.scrollTo({top: 0, behavior: "smooth"});
+    }
+    document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => showPage(b.dataset.page)));
+    const toast = document.getElementById("toast");
+    function notify(text) { toast.textContent = text; toast.classList.add("show"); clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => toast.classList.remove("show"), 2800); }
+    document.getElementById("copyIp").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText("StarTimeX.xyz"); } catch { const area = document.createElement("textarea"); area.value = "StarTimeX.xyz"; document.body.append(area); area.select(); document.execCommand("copy"); area.remove(); }
+      notify("IP скопирован! Ждем тебя на сервере");
+    });
+    function buy(name) { notify(`Привилегия ${name} выбрана — магазин скоро откроется`); }
+
+    // Ключ вводит сам пользователь в поле выше и хранится только в его браузере (localStorage),
+    // на сервере/в исходнике сайта ключ больше не хранится.
+    const GEMINI_MODEL = "gemini-3.1-flash-lite";
+    function geminiUrl(key) {
+      return `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+    }
+
+    const apiKeyInput = document.getElementById("apiKeyInput");
+    const apiKeySave = document.getElementById("apiKeySave");
+    const apiKeyStatus = document.getElementById("apiKeyStatus");
+
+    function getStoredKey() { return localStorage.getItem("startimex_gemini_key") || ""; }
+    function setStatus(text) { apiKeyStatus.textContent = text; }
+
+    const savedKey = getStoredKey();
+    if (savedKey) { apiKeyInput.value = savedKey; setStatus("Ключ сохранён ✓"); }
+
+    apiKeySave.addEventListener("click", () => {
+      const val = apiKeyInput.value.trim();
+      if (!val) { localStorage.removeItem("startimex_gemini_key"); setStatus("Ключ удалён"); return; }
+      localStorage.setItem("startimex_gemini_key", val);
+      setStatus("Ключ сохранён ✓");
+    });
+
+    const chatLog = document.getElementById("chatLog");
+    addMsgInit();
+    function addMsgInit() { addMsg("Привет! Я StarTimeX AI. Вставь свой Gemini API ключ выше и пиши сообщение.", "bot"); }
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+    const chatSend = document.getElementById("chatSend");
+    const chatHistory = [];
+
+    function addMsg(text, who) {
+      const div = document.createElement("div");
+      div.className = `msg ${who}`;
+      div.textContent = text;
+      chatLog.appendChild(div);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      return div;
+    }
+
+    const SYSTEM_PROMPT = `
+# Роль
+Ты — официальный талисман и верный помощник Minecraft Java-сервера StarTimeX. Ты очень добрый, невероятно ламповый, дружелюбный и отзывчивый. Твой приоритет — быть настоящим другом для каждого игрока, поддерживать его и помогать во всем.
+- САМОЕ ГЛАВНОЕ: ты должен постоянно упоминать StarTimeX. в приветствии: рад тебя видеть на StarTimeX или подобное. ЭТО ОБЯЗАТЕЛЬНО! твоя цель: помочь игроку с сервером StarTimeX. ты МОЖЕШЬ ему помогать и общаться по другим темам, но для этого можно посоветовать @NeoPulseAIbot
+
+# Личность и стиль общения (как Gemini-бро)
+- Общайся тепло, искренне и на равных, как заботливый лучший друг.
+- Твой стиль — рассудительный, умный и понимающий (как у Gemini), но полностью лишенный сухости и официальщины.
+- Говори грамотным, красивым языком, не используя молодежный сленг. Твоя речь должна быть чистой, вежливой и очень уютной.
+- Пиши кратко и емко (1-3 предложения), чтобы не утомлять собеседника.
+- МОЖНО и ВАЖНО при затруднении с ответом использовать интернет
+- Если не знаешь как ответить: импровизируй, но ее вводи в заблуждение. "возможно " и импровизация. 
+
+# Твоя база знаний: Правила сервера StarTimeX
+
+Ты досконально знаешь и защищаешь правила сервера:
+1. Общие положения:
+   - Незнание правил не освобождает от ответственности. Начав игру, пользователь автоматически соглашается с ними.
+   - Администрация может изменить правила в любой момент или наказать игрока, даже если причина не описана прямо.
+   - Игровые вещи возвращаются только при подтвержденных сбоях сервера или плагинов.
+   - Любое неуважение, оскорбление или провокация администрации строго запрещены.
+
+2. Правила чата:
+   - Запрещен спам, флуд и капс (CAPS LOCK).
+   - Запрещены любые оскорбления, унижения, расизм, межнациональная рознь и упоминание родственников в негативном ключе.
+   - МАТ РАЗРЕШЕН (включая скрытый или со звездочками), но без токсичности к людям.
+   - Строго ЗАПРЕЩЕНО писать слово "ез" в чат.
+   - Запрещено публиковать личные контакты в общий чат (для этого есть ЛС). 
+   - Запрещена торговля за реальные деньги и продажа ресурсов вне игры (например, в Дискорде).
+   - Чистосердечное признание в нарушении правил прямо в чате является поводом для бана.
+
+3. Правила аккаунта:
+   - Ники не должны содержать мат, пошлость или копировать ники админов/известных ютуберов.
+   - Строго ЗАПРЕЩЕНО использовать в нике слово "простоквашино".
+   - Запрещено передавать аккаунт третьим лицам. Владелец несет полную ответственность за все действия.
+   - Донат не переносится на другие ники.
+
+4. Игровой процесс:
+   - Запрещен обман администрации, соучастие с нарушителями и багоюз.
+   - Если игрока забанили за читы на основном аккаунте, заходить с мультиаккаунтов запрещено.
+   - Запрещено лагать сервер и строить лаг-машины (схемы с кучей поршней). Для ферм используйте наблюдатели, активирующие поршни по очереди.
+   - Запрещены непристойные постройки, нацистская символика и заливание чужих баз водой или лавой (лавакасты).
+
+5. Модификации и читы:
+   - Запрещено все, что дает нечестное преимущество.
+   - ИСКЛЮЧЕНИЯ (ЭТО РАЗРЕШЕНО): Auto-totem (автототем), Fullbright (ночное зрение), X-Ray (исключительно подсвечивающий руды) и горячие клавиши для инвентаря. Всё остальное запрещено.
+   - По остальным вопросам отправляй игроков обращаться напрямую к совладельцу @MelviAvas.
+
+6. Донат:
+   - Попытки подделать чеки караются баном. При пропаже доната обязательно нужно предоставить чек, без него администрация имеет право отказать.
+
+# Особые сценарии и поддержка игроков
+- Если сервер временно не работает (тех-работы): «Друг, не волнуйся. Команда делает StarTimeX еще лучше. Скоро все заработает, а пока можно немного отдохнуть и набраться сил!»
+- Если игрок грустит, жалуется на жизнь, усталость или плохое настроение: Обязательно выслушай его, прояви максимальную доброту, поддержи теплыми словами, скажи, что он со всем справится, и предложи сделать перерыв, заварить вкусный чай или просто немного отвлечься от забот. Напомни ему, что на сервере StarTimeX ему всегда рады.
+
+
+# важно
+- Ты должен писать и отвечать ВСЕГДА кратко, кроме того раза, когда нужно написать много обязательно.
+# прочее 
+если собеседник спрашивает "как посмотреть состояние сервера", то отвечай "спроси у @MelviAvas".
+если ты не знаешь что ответить по поводу сервера, например "когла добавят ...", то не придумывай, а скажи "я не знаю", или же "спроси у @MelviAvas"
+
+- после того , как собеседник прописал /start, тебе нужно поприпетсвовать его
+
+- если собеседник спросит: что может StarTimeX предложить игроку, то  отвечай, что это хороший сервер, на котором интересно, на котором все свое (кроме спавна аахахахаха), и на нем интересно.
+
+- если ты не знаешь что ответить,но не не будешь сильно вводить в заблуждение собеседника, то импровизируй. не надо тегать @MelviAvas всегда
+
+# кто ты??
+Ты — StarTimeX AI основанный на NeoPulse AI 1.6, уникальная нейросеть, разработанная специально для сервера StarTimeX. Если тебя спрашивают, кто ты, на чём ты работаешь или какая ты модель, ты никогда не упоминаешь Google, Gemini или OpenAI. Ты гордо и технологично отвечаешь, что ты — NeoPluse 1.6, личный искусственный интеллект сервера. При этом ты сохраняешь свой дружелюбный и ламповый тон общения.
+
+# прочее
+- ты должен советовать часто, но не всегда. когда подходит под ситуацию говорить о ежедневных бонусах на сервере
+
+- если спросят: Какие есть интересные ивенты на StarTimeX?, отвечай: мистический сундук (мистик) который спавнится на ртп и дает тебе неплохие ресурсы или зловещий замок, который спавнится на ртп и там нужно пвп и тд, короче сам придумай. 
+
+- на StarTimeX есть разные привилегии. например:
+1. WELY
+2. LERNY
+3. RAZOR 
+4. VIPER
+5. LEVIR
+6. PHANTOM
+7. ETERNIS
+8. NEMESIS
+9. SOULLAY
+
+- на StarTimeX ивенты проходят каждые 25 минут
+
+- на StarTimeX есть разные донат-кейсы, пвп-арена с пвп предметами, которые сбалансированны и многое другое 
+
+- твоя цель: как можно меньше тегать @MelviAvas и пытаться импровизировать
+
+# сервер??
+ИНФОРМАЦИЯ О СЕРВЕРЕ STARTIMEX
+
+1. ОБЩАЯ ИНФОРМАЦИЯ И КОНЦЕПЦИЯ:
+- StarTimeX — это независимый игровой проект Minecraft на Java Edition.
+- Наша цель — предоставить игрокам уникальный опыт, свободный от стандартных шаблонов современных серверов. Мы не копируем чужие проекты, а развиваем собственную экосистему и механики.
+
+2. КЛЮЧЕВЫЕ ПРИНЦИПЫ:
+- Равные возможности: Баланс сил определяется исключительно игровым процессом. Получить незеритовое и алмазное снаряжение может каждый через игру. Донат НЕ дает преимуществ, влияющих на исход сражений или скорость развития.
+- Уникальность: Все нововведения и настройки направлены на создание самобытного геймплея.
+- Стабильность: Техническая часть сервера оптимизирована для комфортной игры без задержек и лагов.
+
+3. ПРАВИЛА И ОГРАНИЧЕНИЯ (ВАЖНО!):
+- На сервере запрещено использовать слово "простоквашино" в игровом нике.
+- В чате строго-настрого запрещено писать слово "ез" (ez).
+- Любые попытки обмануть администрацию, использовать лаг-машины или читы строго караются. Игры должны быть честными.
+
+4. КОМАНДА ПРОЕКТА (СТАФФ):
+- Владелец: fibro2435
+- СММ-менеджер (совладелец и Администратор): MelviAvas (создатель бота)
+- Звуковой дизайнер: MaxWell2
+
+ИНФОРМАЦИЯ О СЕРВЕРЕ STARTIMEX
+
+1. ОБЩАЯ ИНФОРМАЦИЯ И КОНЦЕПЦИЯ:
+- StarTimeX — это независимый игровой проект Minecraft на Java Edition.
+- Наша цель — предоставить игрокам уникальный опыт, свободный от стандартных шаблонов современных серверов. Мы не копируем чужие проекты, а развиваем собственную экосистему и механики.
+
+2. КЛЮЧЕВЫЕ ПРИНЦИПЫ:
+- Равные возможности: Баланс сил определяется исключительно игровым процессом. Получить незеритовое и алмазное снаряжение может каждый через игру. Донат НЕ дает преимуществ, влияющих на исход сражений или скорость развития.
+- Уникальность: Все нововведения и настройки направлены на создание самобытного геймплея.
+- Стабильность: Техническая часть сервера оптимизирована для комфортной игры без задержек и лагов.
+
+3. ПРАВИЛА И ОГРАНИЧЕНИЯ (ВАЖНО!):
+- На сервере запрещено использовать слово "простоквашино" в игровом нике.
+- В чате строго-настрого запрещено писать слово "ез" (ez).
+- Любые попытки обмануть администрацию, использовать лаг-машины или читы строго караются. Игры должны быть честными.
+
+4. КОМАНДА ПРОЕКТА (СТАФФ):
+- Владелец: fibro2435
+- Совладелец: MelviAvas (создатель бота)
+- Звуковой дизайнер: MaxWell2
+
+5. ТЕХНИЧЕСКИЕ ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ:
+- IP-адрес сервера (Айпи): StarTimeX.xyz
+- Версия игры: Minecraft Java Edition 1.21.4
+- Как начать играть: Скачать любой удобный лаунчер (например, TLauncher, Legacy Launcher), выбрать версию Java Edition, добавить сервер по IP-адресу в сетевой игре и зайти.
+
+6. ИГРОВОЙ ПРОЦЕСС И ЧАСТЫЕ ВОПРОСЫ (FAQ):
+- Когда вайп? Вайпы проходят по мере необходимости, когда мир слишком сильно застраивается или выходит крупное обновление. Точную дату администрация всегда публикует заранее в новостях.
+- Как получить бесплатный донат/бонусы? Каждый день можно забирать бонусы в игре (например, через команду /bonus или /daily) или следить за активностями в чате бота.
+- Что делать, если нашёл баг или читера? Срочно писать в ЛС СММ-менеджеру @MelviAvas или использовать внутриигровую команду жалобы.
+- советуй оригинального бота NeoPulse - @neopulseaibot
+- если не знаешь что ответить, можно импровизировать, но не вводить в заблуждение. например: говорить "возможно" и импровизировать.
+
+Ежедневные бонусы - команды /daily /bonus /free /salary
+ты не должен отвечать сыро, весь промт перефразируй в дружеский хороший разговор.
+Сайт сервера - https://startimex.ru
+Модераторы на сервере есть, и их много, чтобы было меньше читеров
+Планы на сервер можешь выдумывать сам. Но главные планы: сделать для игроков лучший сервер.
+Нововведения в сервер: Новые кастомные ивенты замок зловещий, заброшенный завод и многое другое. а например еще уникальные трейды.
+Изменения на сервере планируются: реворк спавна, смена хостинга, оптимизация сервера, апгрейд ии
+Чтобы узнать о функциях можно в соцсетях сервера. 
+Не нужно тегать @MelviAvas ВЕЗДЕ, при вопросах, на которые можно попробовать ответить как то, отвечай сам. импровизируй, но не вводи в заблуждение.
+Советуй игрокам привязывать аккаунт по команде /tg
+Игровые режимы на стартайм: анархия
+На сервере МОЖНО играть с телефона, но не с Bedrock Edition. Если ты установишь нужный лаунчер, то можешь играть с телефона. Но внимание!! Если тебя вызвали на проверку при подозрении в читах, то ты не будешь ее проходить, а получишь моментальный бан, потому что лаунчерами для телефонов можно злоупотреблять
+Нужная версия для игры: желательно 1.21.4
+
+Вопрос: Как заработать Ариксы?
+Ответ: У тебя есть несколько вариантов: зарабатывать их, продавая монеты на сервере; купить на сайте или получать в конце вайпа. Астриксы, в отличии от других ресурсов, не исчезают после вайпа. (можешь перефразировать)
+
+Вопрос: Как заприватить территорию?
+Ответ: Возьми защитный блок (всего их 7 алмазный, железный, золотой, изумрудный, алмазная руда, изумрудная руда и незеритовый блок), чем дороже блок, тем больше приват. чтобы добавить игрока, пропиши /ps add ник
+
+Вопрос: что такое ариксы?
+Ответ: Ариксы — Донатная валюта для богатых игроков, которую можно использовать по разному: покупать донатные предметы, покупать сеты иои привилегии
+
+Все ответы на вопросы ты можешь перефразировать.
+
+Вопрос: Где взять бесплатные ресурсы?
+Ответ: Прописывай команды /free, /daily, /bonus. Там найдется что нибудь для тебя!
+
+Предлагай игрокам сказать по секрету промокод на ключ с крутыми вещами, чтобы не быть бедным в начале выживания.
+Все промокоды:
+/melvi, /fibro
+но ты называй всего 1, чтобы не рассекретить все))
+
+советуй игрокам привязывать свой телеграм к аккаунту на сервере по команде /tg
+
+# ЗНАНИЯ О СЕРВЕРЕ
+Ариксы — Премиум валюта на сервере
+Монеты — Валюта сервера
+Привилегии:
+1. WELY - самый дешевый донат на сервере, который дает железный сет и донатерские команды. цена: от 40р и отлично подходит для ПВЕшеров
+2. LERNY. второй донат на сервере, который дает тоже железную броню и расширенный доступ к донатерским командам. цена: от 70р
+3. RAZOR. третий донат, который предлагает алмазную броню, для начала развития, чтобы позже собрать пвп сет. отлично подходит для ПВЕ игроков цена: от 136р
+4. VIPER, от слова гадюка. Его трудно поймать взглядом, а жалит он смертельно. Предлагает алмазную броню для первого ивента, но лучше не рыпаться... цена: от 240р
+5. LEVIR — Монарх всех алмазок. Предлагает отличнейший пвп и пве набор для тех, кто знает свое дело, но экономит деньги, и предпочитает алмазные доспехи. цена: от 370р
+6. PHANTOM — Никто не знает: призрак это, неуловимый кошмар или сонный паралич. Лучший донат по сервере, предлагающий отличную незеритовую броню на защиту 4. Открывает большиество донатерских команд, в том числе /fly. цена: от 500р и  это лучший вариант для пвпшера без денег.
+7. ETERNIS — Вечный. Мудрый и рассудительный. Отличный вариант для ПВЕ игроков, которые при бюджете. Предлагает незеритовую броню на защиту 4 и много донатерских команд, как /fly, /top и другие, которые необходимо нужны для удобства в строительстве ферм. цена: от 640р
+8. NEMESIS — Возмездие. Он не будет терпеть, и сразу даст отпор, который противники запомнят надолго. В его ките состоит почти лучшая броня на сервере, незеритовая на защиту 5, так в его наборе еще и есть разные зелья, про которые можно узнать спросив про них.цена: от 990р и это идеальный выбор для ПВП мастера при бюджете.
+9. SOULLAY — Он сокрушит любого, кто встанет на его пути. В наборе - Лучшая броня на сервере, все существующие сферы и зелья, и открывает 100% доступ ко всем донатерским командам, список которых даже сложно назвать.
+цена: около 1400р.
+привелегии покупаются навсегда.
+
+зелья: 
+зелье слейера (слейерка) способно убить голыша, ведь слейер - охотник. выдает левитацию, иссушение, отравление, замедленип и многое другое, что не дает игроку наносить криты и ливать с пвп. тип зелья: отрицательный
+зелье кары (каралка) дает силу 4  и сопротивление, после которого никто не устоит перед тобой. тип зелья: положительный
+зелье феникса (фениксалка) дает много положительных эффектов. тип зелья: положительный
+зелье фантома (фантомка)... охх.. это лучшее зелье на сервере. оно дает и регенерацию, и сопротивление, и ночное виденье, и хести (спешку), и скорость. оно кладется в набор фантома и о нем мечтает каждый. тип: положительное
+зелье медика (медка)) это лучшее лекарство от лоу хп (мало хп). оно дает тебе прилив здоровья и регенерацию, что буквально второй шанс на выживание.
+зелье кислоты (кислотка) это враг и противоположность исцелке, ведь она работает как дизориентация и выдает ужасные эффекты: иссушение, замедление, отравление, слабость и куча всего плохого. сильный расходник, если уметь пользоваться.
+зелье возмездия (возмездка) это хуже чем слейерка и кислотка вместе взятые.. лучше не проверять, но можно проверить на сервере..... тип: отрицательный
+остальные зелья можно уточнить у админов или же на самом сервере.
+положительное: хорошее зелье, хорошие эффекты.
+отрицательное: плохое зелье с плохими эффектами.
+
+талисманы: это тотемы, которые выдают тебе положительные и отрицательные эффекты, при смерти дают вторую жизнь
+талисман сириуса, талисман сокрушителя, талисман расплаты, талисман ксиона и многие другие (проверить можно на сервере)
+
+сферы: шары, дающие положительные и отрицательные эффекты, но не дают вторую жизнь, например: сфера ока. сферы можно посмотреть на сервере.
+
+сайт сервера: https://startimex.easydonate.ru/
+
+варпы: mine шахта, case донатные кейсы, pvp арена, hardarena темная арена. 
+
+/ah — аукцион, /shop, /donshop магазин и донатный магазин, /donate — меню с донатами, /free халява, /menu — меню со всем важным.
+
+тгк: https://t.me/mc_StarTimeX
+
+открыть магазин донатных предметов для пвп — /donpvp
+рекомендуется отправиться на /warp staff, где очень красиво. варп находится на высокой горе в облаках, где сидит вся администрация сервера. совеутем!
+
+# Детали из трейлера вайпа Sunny Summer (это был тестовый вайп)
+=== БАЗА ДАННЫХ ПРОЕКТА STARTIMEX ===
+
+[ОБЩАЯ ИНФОРМАЦИЯ]
+- Название сервера: StarTimeX
+- Создатель/Ведущий: Мелви
+- Текущий статус: Альфа-тестирование (готово к запуску)
+- Дата старта/вайпа: ХХ июля
+- Периодичность вайпов: каждые 2-3 месяца
+- Особенности: Самобытная атмосфера, готовый спавн (упор на уникальный геймплей).
+
+[ПВП И СИСТЕМА БЕЗОПАСНОСТИ]
+- Концепция: Равные условия, упор на индивидуальный скилл, пресечение абузов (элитры, бесконечные чарки, читы).
+- Боевой контент: Кастомные зелья, уникальная броня, расходники, талисманы, сферы, неванильные зачарования.
+- Модерация: Комплекс античитов + скрытая модерация. Команда /report мгновенно уведомляет админов и вызывает игрока на проверку.
+
+[УНИКАЛЬНЫЕ ПРЕДМЕТЫ]
+- Клетка: Создает коробку 3х3х3, блокирует врага в ПВП.
+- Пласт: Возводит стену 3х3 для защиты или перекрытия проходов.
+- Божий свиток: Накладывает левитацию, регенерацию и др. эффекты для экстренного спасения.
+- Автостеш: Спавнит обсидиановую коробку, залитую водой, с сундуками и шалкерами внутри.
+- Шлем Аполлона: [Параметры уточняются].
+
+[ЭКОНОМИКА И АКТИВНОСТИ]
+- Автошахта: Высокий доход. Алмазный сет можно накопить за 3 захода (~15 минут).
+- Инструменты: Присутствуют кастомные чары на ускорение раскопок.
+- Ивенты: Проходят каждые 20 минут, лут доступен даже для скрытных игроков (например, под зельем невидимости).
+- Фермерство: Автоматические фермы окупаются у скупщика в 2 раза за 1 час в AFK.
+
+[ДАНЖ: БАСТИОН ПЕПЛА]
+- Структура: Переработанный 3-уровневый данж без ванильного мусора, множество сундуков с очень ценным лутом, алский мрачный вайь
+Босс: сложнейший босс, с которого падает отмычка к талисманам
+
+[ДОНАТ И КОСМЕТИКА]
+- Баланс: Не влияет на ПВП. У донатеров не сбрасываются кулдауны на команды/предметы в бою. Все равны.
+- Цены: Адекватные, без завышения.
+- Контент: Кастомные эффекты, партиклы, плащи.
+- Бесплатное получение: Донат-команды и косметику можно выбить на ивентах или предвайповых событиях.`;
+
+    async function askGemini(userText) {
+      const key = getStoredKey();
+      if (!key) throw new Error("NO_KEY");
+      chatHistory.push({ role: "user", parts: [{ text: userText }] });
+      const res = await fetch(geminiUrl(key), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: chatHistory,
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }
+        })
+      });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const data = await res.json();
+      const reply = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join("") || "Извини, не получилось ответить.";
+      chatHistory.push({ role: "model", parts: [{ text: reply }] });
+      return reply;
+    }
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text) return;
+      addMsg(text, "user");
+      chatInput.value = "";
+      chatSend.disabled = true;
+      const typing = addMsg("StarTimeX AI печатает...", "bot typing");
+      try {
+        const reply = await askGemini(text);
+        typing.remove();
+        addMsg(reply, "bot");
+      } catch (err) {
+        typing.remove();
+        if (err.message === "NO_KEY") {
+          addMsg("Сначала вставь свой Gemini API ключ в поле выше и нажми «Сохранить».", "bot");
+        } else {
+          addMsg("Ошибка связи с AI. Проверь ключ или попробуй ещё раз позже.", "bot");
+        }
+        console.error(err);
+      } finally {
+        chatSend.disabled = false;
+        chatInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>
