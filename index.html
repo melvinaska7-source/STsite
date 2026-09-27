@@ -482,35 +482,68 @@
 - Контент: Кастомные эффекты, партиклы, плащи.
 - Бесплатное получение: Донат-команды и косметику можно выбить на ивентах или предвайповых событиях.`;
 
+    function getOpenRouterError(status, data) {
+      const raw = data?.error?.message || data?.message || data?.error || "";
+      const details = typeof raw === "string" ? raw : JSON.stringify(raw);
+
+      if (status === 400) return `Ошибка запроса (400). ${details || "Проверь параметры запроса."}`;
+      if (status === 401) return "OpenRouter отклонил API-ключ (401). Ключ недействителен, отозван или указан неверно.";
+      if (status === 402) return "OpenRouter вернул 402: для этого запроса недостаточно доступного баланса/кредитов.";
+      if (status === 403) return "OpenRouter запретил запрос (403). Проверь ограничения API-ключа.";
+      if (status === 404) return `Модель или endpoint не найдены (404). ${details}`;
+      if (status === 429) return "Слишком много запросов (429). Подожди немного и попробуй снова.";
+      if (status >= 500) return `Ошибка OpenRouter/провайдера (${status}). Попробуй ещё раз через несколько секунд.`;
+      return `OpenRouter вернул ${status}. ${details || "Неизвестная ошибка."}`;
+    }
+
     async function askGemini(userText) {
       chatHistory.push({ role: "user", content: userText });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
 
-      const res = await fetch(OPENROUTER_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-          "HTTP-Referer": window.location.href,
-          "X-Title": "StarTimeX AI"
-        },
-        body: JSON.stringify({
-          model: OPENROUTER_MODEL,
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            ...chatHistory
-          ]
-        })
-      });
+      try {
+        const res = await fetch(OPENROUTER_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENROUTER_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: OPENROUTER_MODEL,
+            messages: [
+              { role: "system", content: SYSTEM_PROMPT },
+              ...chatHistory
+            ]
+          }),
+          signal: controller.signal
+        });
 
-      if (!res.ok) throw new Error(`API error ${res.status}`);
+        const raw = await res.text();
+        let data = null;
+        try { data = raw ? JSON.parse(raw) : null; } catch { data = { message: raw }; }
 
-      const data = await res.json();
-      const reply =
-        data?.choices?.[0]?.message?.content ||
-        "Извини, не получилось ответить.";
+        if (!res.ok) {
+          throw new Error(getOpenRouterError(res.status, data));
+        }
 
-      chatHistory.push({ role: "assistant", content: reply });
-      return reply;
+        const reply = data?.choices?.[0]?.message?.content;
+        if (!reply) {
+          throw new Error("OpenRouter ответил без текста сообщения.");
+        }
+
+        chatHistory.push({ role: "assistant", content: reply });
+        return reply;
+      } catch (err) {
+        if (err?.name === "AbortError") {
+          throw new Error("OpenRouter не ответил за 30 секунд.");
+        }
+        if (err instanceof TypeError) {
+          throw new Error("Браузер не смог подключиться к OpenRouter. Проверь интернет или ограничения браузера.");
+        }
+        throw err;
+      } finally {
+        clearTimeout(timeout);
+      }
     }
 
     chatForm.addEventListener("submit", async (e) => {
@@ -527,8 +560,13 @@
         addMsg(reply, "bot");
       } catch (err) {
         typing.remove();
-        addMsg("Ошибка связи с AI. Попробуй ещё раз позже.", "bot");
-        console.error(err);
+        // Убираем неудачное сообщение из истории, чтобы повторная отправка не дублировала его.
+        if (chatHistory.at(-1)?.role === "user" && chatHistory.at(-1)?.content === text) {
+          chatHistory.pop();
+        }
+        const message = err?.message || "Неизвестная ошибка.";
+        addMsg(`Ошибка: ${message}`, "bot");
+        console.error("StarTimeX AI / OpenRouter:", err);
       } finally {
         chatSend.disabled = false;
         chatInput.focus();
